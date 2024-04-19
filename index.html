@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle and Distance Plot</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="chart" width="800" height="400"></canvas>
+    <script>
+        // Initialize a line chart
+        var ctx = document.getElementById('chart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Angle vs Distance',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 1,
+                    pointRadius: 5, // Adjust point size
+                    pointHoverRadius: 7, // Adjust hover point size
+                    showLine: false // Disable line connecting points
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        type: 'linear',
+                        position: 'bottom',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Angle'
+                        }
+                    }],
+                    yAxes: [{
+                        type: 'linear',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Distance (cm)'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Function to fetch data from the server and update the chart
+        function fetchData() {
+            fetch('http://192.168.0.137') // This adress is not constant. It is subject to change on the presentation day
+                .then(response => response.json())
+                .then(data => {
+                    // Pushing received angle and distance data to the chart
+                    chart.data.datasets[0].data.push({x: data.angle, y: data.distance});
+                    chart.update();
+                });
+        }
+
+        // Fetching data every second
+        setInterval(fetchData, 1000);
+    </script>
+</body>
+</html>
