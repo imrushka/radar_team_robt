@@ -5,11 +5,11 @@
 
 Servo servo; // Create a servo object to control the servo motor
 
-const int encoderDT = 3;   // DT pin of the rotary encoder connected to pin 5
-const int encoderCLK = 2;  // CLK pin of the rotary encoder connected to pin 6
-const int trigPin = 5;     // Ultrasonic sensor trig pin (2nd pin)
+const int encoderDT = 3;   // DT pin of the rotary encoder connected to pin 3
+const int encoderCLK = 2;  // CLK pin of the rotary encoder connected to pin 2
+const int trigPin = 5;     // Ultrasonic sensor trig pin (5th pin)
 const int echoPin = 6;
-int distance = 0;     // Ultrasonic sensor echo pin (3rd pin)
+int distance = 0;     // Ultrasonic sensor echo pin (0th pin)
 
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters).
 #define SERVO_PIN 4 // Pin for controlling the servo
@@ -39,29 +39,66 @@ void setup() {
 
 void loop() {
   EthernetClient client = server.available();
+  for(int i=0;i<=180;i+=10){  
+    EthernetClient client = server.available();
+    servo.write(i);
+    
+    delay(500);
+
+  // servo.write(angle);
+    // distance = sonar.ping_cm();
   
-  servo.write(angle);
-  distance = sonar.ping_cm();
+    if (client) {
+      if (client.connected()) {
+        // Read ultrasonic sensor distance
+        int distance = sonar.ping_cm();
 
-  
-  if (client) {
-    if (client.connected()) {
-      // Read ultrasonic sensor distance
-      int distance = sonar.ping_cm();
+        // Create JSON data
+        String jsonData = "{\"angle\": " + String(i) + ", \"distance\": " + String(distance) + "}";
 
-      // Create JSON data
-      String jsonData = "{\"angle\": " + String(angle) + ", \"distance\": " + String(distance) + "}";
+        // Send JSON response to client
+        client.println("HTTP/1.1 200 OK");
+        client.println("Access-Control-Allow-Origin: *"); // Allow requests from any origin
+        client.println("Content-Type: application/json");
+        client.println("Connection: close");
+        client.println();
+        client.println(jsonData);
 
-      // Send JSON response to client
-      client.println("HTTP/1.1 200 OK");
-      client.println("Access-Control-Allow-Origin: *"); // Allow requests from any origin
-      client.println("Content-Type: application/json");
-      client.println("Connection: close");
-      client.println();
-      client.println(jsonData);
+        delay(500); // Delay to prevent flooding
+        client.stop();
+      }
+    }
+  }
+  for(int i=170;i>=10;i-=10){  
+    EthernetClient client = server.available();
+    servo.write(i);
+    
+    delay(500);
 
-      delay(1000); // Delay to prevent flooding
-      client.stop();
+  // servo.write(angle);
+    distance = sonar.ping_cm();
+
+    
+    if (client) {
+      if (client.connected()) {
+        // Read ultrasonic sensor distance
+        
+        int distance = sonar.ping_cm();
+
+        // Create JSON data
+        String jsonData = "{\"angle\": " + String(i) + ", \"distance\": " + String(distance) + "}";
+
+        // Send JSON response to client
+        client.println("HTTP/1.1 200 OK");
+        client.println("Access-Control-Allow-Origin: *"); // Allow requests from any origin
+        client.println("Content-Type: application/json");
+        client.println("Connection: close");
+        client.println();
+        client.println(jsonData);
+
+        delay(500); // Delay to prevent flooding
+        client.stop();
+      }
     }
   }
 }
